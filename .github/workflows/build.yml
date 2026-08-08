@@ -1,0 +1,35 @@
+name: C/C++ CI Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup MSYS2 and Dependencies
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        install: >-
+          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-ucrt-x86_64-freeglut
+
+    - name: Compile the Game
+      run: |
+        mkdir -p bin/Release
+        echo "Compiling source files..."
+        g++ -Wall -O2 -Iinclude -c src/*.cpp main.cpp
+        echo "Linking objects into executable..."
+        g++ -o "bin/Release/DeathByRace.exe" *.o -lfreeglut -lopengl32 -lglu32 -lwinmm -lgdi32
+        echo "Build successful!"
